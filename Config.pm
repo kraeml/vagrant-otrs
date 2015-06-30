@@ -43,7 +43,8 @@ sub Load {
   $Self->{DatabasePw} = 'otrspassword';
 
   # The database DSN for PostgreSQL ==> more: "perldoc DBD::Pg"
-  $Self->{'DatabaseDSN'} = "DBI:Pg:dbname=$Self->{Database};host=$Self->{DatabaseHost}";
+  # $Self->{'DatabaseDSN'} = "DBI:Pg:dbname=$Self->{Database};host=$Self->{DatabaseHost}";
+  $Self->{'DatabaseDSN'} = "DBI:mysql=$Self->{Database};host=$Self->{DatabaseHost}";
 
   # ---------------------------------------------------- #
   # fs root directory
