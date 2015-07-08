@@ -1,10 +1,15 @@
-VERSION='4.0.9' # OTRS
+OTRS_VERSION='4.0.9'
 MYSQL_PASSWORD='vagrant'
 
 install_mysql () {
 	debconf-set-selections <<< "mysql-server mysql-server/root_password password $MYSQL_PASSWORD"
 	debconf-set-selections <<< "mysql-server mysql-server/root_password_again password $MYSQL_PASSWORD"
 	apt-get install mysql-server -y > /dev/null
+	# Replace config values to fulfill the requirements of OTRS
+	sudo sed -ie 's/max_allowed_packet\([[:space:]]*\)=\([[:space:]]*\)[[:digit:]]*M/max_allowed_packet\1=\220M/g' /etc/mysql/my.cnf
+	sudo sed -ie 's/\(^.*bind-address.*$\)/\1\ninnodb_log_file_size = 512M/g' /etc/mysql/my.cnf
+	sudo mv /var/lib/mysql/ib_logfile[01] /tmp/
+	sudo service mysql restart
 }
 
 install_apache () {
@@ -48,10 +53,10 @@ install_phpmyadmin () {
 
 install_otrs () {
 	echo "Download otrs..."
-	wget -q "http://ftp.otrs.org/pub/otrs/otrs-$VERSION.tar.bz2" > /dev/null
+	wget -q "http://ftp.otrs.org/pub/otrs/otrs-$OTRS_VERSION.tar.bz2" > /dev/null
 	echo "Extract otrs..."
-	tar xjf otrs-$VERSION.tar.bz2 > /dev/null
-	sudo mv otrs-$VERSION /opt/otrs
+	tar xjf otrs-$OTRS_VERSION.tar.bz2 > /dev/null
+	sudo mv otrs-$OTRS_VERSION /opt/otrs
 
 	echo "Add otrs user..."
 	sudo useradd -d /opt/otrs/ -c 'OTRS user' otrs
@@ -76,6 +81,10 @@ install_otrs () {
 	sudo service apache2 restart
 }
 
+install_tools () {
+	sudo apt-get install -y wajig
+}
+
 echo "apt-get update..."
 sudo apt-get update > /dev/null
 echo "apt-get install..."
@@ -84,4 +93,5 @@ install_otrs_dependencies
 install_apache
 install_otrs
 install_phpmyadmin
+install_tools
 
